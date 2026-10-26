@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>KyvoraSetup</AssemblyName>
+    <RootNamespace>KyvoraSetup</RootNamespace>
+    <ApplicationIcon>..\KyvoraClient.ico</ApplicationIcon>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(PayloadArchive)' != ''">
+    <EmbeddedResource Include="$(PayloadArchive)" LogicalName="KyvoraClientPayload.zip" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\xd\Kyvora-Galaxy.jpg" LogicalName="Kyvora-Galaxy.jpg" />
+  </ItemGroup>
+</Project>

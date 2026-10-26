@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>KyvoraClient</AssemblyName>
+    <RootNamespace>KyvoraPvp</RootNamespace>
+    <ApplicationIcon>KyvoraClient.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="KyvoraSetup\**\*.cs" />
+    <Compile Remove="ModBrowserWindow.cs" />
+    <Page Remove="KyvoraSetup\**\*.xaml" />
+    <PackageReference Include="CmlLib.Core" Version="4.0.6" />
+    <PackageReference Include="CmlLib.Core.Installer.Forge" Version="2.0.0" />
+    <PackageReference Include="CmlLib.Core.Auth.Microsoft" Version="3.3.0" />
+    <PackageReference Include="XboxAuthNet.Game.Msal" Version="0.1.2" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Install-KyvoraPvp.ps1" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Update="Install-KyvoraPvp.bat" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="xd\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="mods\KyvoraHud*.jar" Condition="Exists('mods\KyvoraHud.jar') Or Exists('mods\KyvoraHud-1.16.5.jar')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+</Project>

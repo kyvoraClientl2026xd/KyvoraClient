@@ -1,0 +1,6 @@
+**/bin/
+**/obj/
+**/.gradle/
+**/build/
+dist/
+mods/*.jar

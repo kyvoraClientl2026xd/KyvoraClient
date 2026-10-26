@@ -1,0 +1,11 @@
+[
+  {
+    "modid": "kyvorahud",
+    "name": "Kyvora HUD",
+    "description": "Client-side keystrokes, CPS, FPS, coordinates, and ping display.",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "authorList": ["Kyvora"],
+    "dependencies": []
+  }
+]
