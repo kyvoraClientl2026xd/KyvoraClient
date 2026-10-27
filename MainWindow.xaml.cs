@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 using Color = System.Windows.Media.Color;
@@ -34,12 +35,15 @@ public partial class MainWindow : Window
     private MinecraftLauncher _launcher = null!;
     private MSession? _session;
     private DeviceCodePromptWindow? _deviceCodePrompt;
+    private LaunchLogWindow? _launchLogWindow;
     private bool _isBusy;
-    private int _memoryLimitMb = 2048;
+    private int _memoryLimitMb = 1024;
 
     public MainWindow()
     {
         InitializeComponent();
+        _memoryLimitMb = GetRecommendedMemoryMb(_selectedVersion);
+        SelectMemoryOption(_memoryLimitMb);
         LoadLauncherSettings();
         _launcher = new MinecraftLauncher(MinecraftDirectory);
         UpdateSelectedVersionDisplay();
@@ -106,7 +110,7 @@ public partial class MainWindow : Window
                     _selectedVersion = version;
             }
             if (!json.RootElement.TryGetProperty("MemoryMb", out var ram) || !ram.TryGetInt32(out var value)) return;
-            _memoryLimitMb = Math.Clamp(value, 1024, 8192);
+            _memoryLimitMb = ClampMemoryToSafeLimit(value);
             for (var i = 0; i < MemorySelector.Items.Count; i++)
                 if (MemorySelector.Items[i] is ComboBoxItem item && int.TryParse(item.Tag?.ToString(), out var option) && option == _memoryLimitMb)
                 { MemorySelector.SelectedIndex = i; break; }
@@ -174,6 +178,7 @@ public partial class MainWindow : Window
 
     private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
+        AnimateEntrance();
         if (string.IsNullOrWhiteSpace(_clientId) || _configurationError is not null)
             return;
 
@@ -211,7 +216,7 @@ public partial class MainWindow : Window
 
     private async Task<JELoginHandler> CreateLoginHandlerAsync()
     {
-        var application = await MsalClientHelper.BuildApplicationWithCache(_clientId);
+        var application = await BuildMicrosoftApplicationWithCacheAsync();
         return new JELoginHandlerBuilder()
             .WithOAuthProvider(new MsalCodeFlowProvider(application))
             .Build();
@@ -222,7 +227,7 @@ public partial class MainWindow : Window
         if (!useDeviceCode)
             return await CreateLoginHandlerAsync();
 
-        var application = await MsalClientHelper.BuildApplicationWithCache(_clientId);
+        var application = await BuildMicrosoftApplicationWithCacheAsync();
         var provider = new MsalDeviceCodeProvider(application, deviceCode =>
         {
             Dispatcher.Invoke(() => ShowDeviceCodePrompt(deviceCode));
@@ -231,6 +236,40 @@ public partial class MainWindow : Window
         return new JELoginHandlerBuilder()
             .WithOAuthProvider(provider)
             .Build();
+    }
+
+    private async Task<Microsoft.Identity.Client.IPublicClientApplication> BuildMicrosoftApplicationWithCacheAsync()
+    {
+        var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        var cacheDirectory = Path.Combine(localAppData, "KyvoraClient", "auth");
+        const string cacheFileName = "kyvora_msal_cache.txt";
+        var cachePath = Path.Combine(cacheDirectory, cacheFileName);
+        Directory.CreateDirectory(cacheDirectory);
+
+        var legacyCachePath = Path.Combine(localAppData, "cmllib_msal_cache.txt");
+        if (!File.Exists(cachePath) && File.Exists(legacyCachePath))
+        {
+            try
+            {
+                File.Copy(legacyCachePath, cachePath);
+                AddLog("Se conservó la cuenta Microsoft vinculada anteriormente.");
+            }
+            catch (IOException exception)
+            {
+                AddLog($"No se pudo migrar la caché de inicio de sesión ({exception.GetType().Name}); se creará una nueva al iniciar sesión.");
+            }
+            catch (UnauthorizedAccessException exception)
+            {
+                AddLog($"Windows no permitió migrar la caché de inicio de sesión ({exception.GetType().Name}); se creará una nueva al iniciar sesión.");
+            }
+        }
+
+        var cacheSettings = new MsalCacheSettings
+        {
+            CacheFileName = cacheFileName,
+            CacheDir = cacheDirectory
+        };
+        return await MsalClientHelper.BuildApplicationWithCache(_clientId, cacheSettings);
     }
 
     private void ShowDeviceCodePrompt(DeviceCodeResult deviceCode)
@@ -347,6 +386,7 @@ public partial class MainWindow : Window
         if (_session is null || _isBusy)
             return;
 
+        ShowLaunchLogs();
         SetBusy(true);
         InstallProgress.Visibility = Visibility.Visible;
         ProgressText.Visibility = Visibility.Visible;
@@ -376,6 +416,7 @@ public partial class MainWindow : Window
                 ProgressText.Text = string.IsNullOrWhiteSpace(args.Name)
                     ? $"Preparando archivos: {args.ProgressedTasks}/{args.TotalTasks}"
                     : $"Preparando: {args.Name}";
+                _launchLogWindow?.SetActivity(ProgressText.Text);
             });
         };
 
@@ -459,6 +500,7 @@ public partial class MainWindow : Window
                 ProgressText.Text = string.IsNullOrWhiteSpace(args.Name)
                     ? $"Instalando Forge: {args.ProgressedTasks}/{args.TotalTasks}"
                     : $"Forge: {args.Name}";
+                _launchLogWindow?.SetActivity(ProgressText.Text);
             }),
             InstallerOutput = new Progress<string>(AddLog)
         };
@@ -504,17 +546,55 @@ public partial class MainWindow : Window
             !int.TryParse(item.Tag?.ToString(), out var requestedMb))
             return;
 
-        var availableMb = (int)(GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / (1024 * 1024));
-        var safeLimit = Math.Max(1024, availableMb / 2);
+        var safeLimit = GetSafeMemoryLimitMb();
         if (requestedMb > safeLimit)
         {
             _memoryLimitMb = safeLimit;
+            SelectMemoryOption(_memoryLimitMb);
             AddLog($"RAM ajustada automáticamente a {_memoryLimitMb / 1024d:0.#} GB para dejar recursos al sistema.");
         }
         else
         {
             _memoryLimitMb = requestedMb;
         }
+    }
+
+    private static int GetSafeMemoryLimitMb()
+    {
+        var availableMb = (int)(GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / (1024 * 1024));
+        var memoryCeiling = Math.Max(1024, (int)(availableMb * 0.45));
+        return new[] { 1024, 1536, 2048, 3072, 4096, 5120, 6144, 8192 }
+            .Where(value => value <= memoryCeiling).DefaultIfEmpty(1024).Max();
+    }
+
+    private static int GetRecommendedMemoryMb(string version)
+    {
+        var availableMb = (int)(GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / (1024 * 1024));
+        var minor = ParseMinorVersion(version);
+        var recommendation = minor <= 12 ? 1024 : minor <= 14 ? 1536 : 2048;
+        if (availableMb <= 4096) recommendation = 1024;
+        else if (availableMb <= 6144) recommendation = Math.Min(recommendation, 1536);
+        return Math.Min(recommendation, GetSafeMemoryLimitMb());
+    }
+
+    private static int ParseMinorVersion(string version)
+    {
+        var parts = version.Split('.');
+        return parts.Length > 1 && int.TryParse(parts[1], out var minor) ? minor : 16;
+    }
+
+    private static int ClampMemoryToSafeLimit(int requestedMb)
+    {
+        var options = new[] { 1024, 1536, 2048, 3072, 4096, 5120, 6144, 8192 };
+        var safeLimit = GetSafeMemoryLimitMb();
+        return options.Where(value => value <= requestedMb && value <= safeLimit).DefaultIfEmpty(1024).Max();
+    }
+
+    private void SelectMemoryOption(int memoryMb)
+    {
+        for (var i = 0; i < MemorySelector.Items.Count; i++)
+            if (MemorySelector.Items[i] is ComboBoxItem item && int.TryParse(item.Tag?.ToString(), out var option) && option == memoryMb)
+            { MemorySelector.SelectedIndex = i; return; }
     }
 
     private void HomeNavButton_Click(object sender, RoutedEventArgs e)
@@ -545,9 +625,15 @@ public partial class MainWindow : Window
     {
         if (_isBusy) return;
         SetActiveNav(VersionNavButton);
+        var previousVersion = _selectedVersion;
         var picker = new VersionPickerWindow(_selectedVersion) { Owner = this };
         if (picker.ShowDialog() != true || string.IsNullOrWhiteSpace(picker.SelectedVersion)) return;
         _selectedVersion = picker.SelectedVersion;
+        if (_memoryLimitMb == GetRecommendedMemoryMb(previousVersion))
+        {
+            _memoryLimitMb = GetRecommendedMemoryMb(_selectedVersion);
+            SelectMemoryOption(_memoryLimitMb);
+        }
         _launcher = new MinecraftLauncher(MinecraftDirectory);
         UpdateSelectedVersionDisplay();
         SaveLauncherSettings();
@@ -604,7 +690,7 @@ public partial class MainWindow : Window
         panel.Children.Add(new TextBlock { Text = _selectedVersion == PremiumVersion ? $"Minecraft {_selectedVersion} · Forge {ForgeBuild}" : $"Minecraft {_selectedVersion} · Forge", Margin = new Thickness(0, 6, 0, 20), Foreground = Brushes.LightGray });
         panel.Children.Add(new TextBlock { Text = "Memoria máxima para Minecraft", FontWeight = FontWeights.SemiBold });
         var memory = new ComboBox { Margin = new Thickness(0, 8, 0, 16), Width = 150, HorizontalAlignment = HorizontalAlignment.Left };
-        foreach (var value in new[] { 1024, 2048, 3072, 4096, 5120, 6144, 8192 })
+        foreach (var value in new[] { 1024, 1536, 2048, 3072, 4096, 5120, 6144, 8192 })
             memory.Items.Add(new ComboBoxItem { Content = $"{value / 1024d:0.#} GB", Tag = value });
         memory.SelectedIndex = Math.Max(0, Enumerable.Range(0, memory.Items.Count)
             .FirstOrDefault(i => (int)((ComboBoxItem)memory.Items[i]).Tag == _memoryLimitMb));
@@ -613,17 +699,13 @@ public partial class MainWindow : Window
         var actions = new StackPanel { Orientation = Orientation.Horizontal };
         var openFolder = new Button { Content = "ABRIR CARPETA", Background = new SolidColorBrush(Color.FromRgb(36, 40, 51)), Margin = new Thickness(0, 0, 8, 0) };
         openFolder.Click += (_, _) => Process.Start(new ProcessStartInfo(MinecraftDirectory) { UseShellExecute = true });
-        var save = new Button { Content = "GUARDAR", Background = new SolidColorBrush(Color.FromRgb(140, 123, 255)) };
+        var save = new Button { Content = "GUARDAR", Background = new SolidColorBrush(Color.FromRgb(186, 72, 255)) };
         save.Click += (_, _) =>
         {
             if (memory.SelectedItem is ComboBoxItem item && int.TryParse(item.Tag?.ToString(), out var selected))
             {
-                var safeLimit = Math.Max(1024, (int)(GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / (1024 * 1024)) / 2);
-                _memoryLimitMb = new[] { 1024, 2048, 3072, 4096, 5120, 6144, 8192 }
-                    .Where(value => value <= selected && value <= safeLimit).DefaultIfEmpty(1024).Max();
-                var match = Enumerable.Range(0, MemorySelector.Items.Count)
-                    .FirstOrDefault(i => (int)((ComboBoxItem)MemorySelector.Items[i]).Tag == _memoryLimitMb);
-                MemorySelector.SelectedIndex = match;
+                _memoryLimitMb = ClampMemoryToSafeLimit(selected);
+                SelectMemoryOption(_memoryLimitMb);
                 SaveLauncherSettings();
             }
             dialog.Close();
@@ -655,10 +737,14 @@ public partial class MainWindow : Window
         foreach (var button in new[] { HomeNavButton, VersionNavButton, FolderNavButton, StatusNavButton, SettingsNavButton })
         {
             button.Background = button == active
-                ? new SolidColorBrush(Color.FromRgb(36, 39, 53))
+                ? new SolidColorBrush(Color.FromRgb(41, 17, 58))
                 : Brushes.Transparent;
+            button.BorderBrush = button == active
+                ? new SolidColorBrush(Color.FromRgb(184, 71, 255))
+                : new SolidColorBrush(Color.FromRgb(51, 38, 66));
+            button.BorderThickness = button == active ? new Thickness(1.5) : new Thickness(1);
             button.Foreground = button == active
-                ? new SolidColorBrush(Color.FromRgb(218, 212, 255))
+                ? new SolidColorBrush(Color.FromRgb(240, 215, 255))
                 : new SolidColorBrush(Color.FromRgb(174, 180, 194));
         }
     }
@@ -668,6 +754,40 @@ public partial class MainWindow : Window
         StatusText.Text = title;
         StatusDetailText.Text = detail;
         StatusIndicator.Fill = new SolidColorBrush(color);
+        _launchLogWindow?.SetActivity(title);
+    }
+
+    private void AnimateEntrance()
+    {
+        var slide = new TranslateTransform(0, 16);
+        RootLayout.RenderTransform = slide;
+        RootLayout.Opacity = 0;
+        var easing = new CubicEase { EasingMode = EasingMode.EaseOut };
+        RootLayout.BeginAnimation(UIElement.OpacityProperty, new DoubleAnimation(0, 1, new Duration(TimeSpan.FromMilliseconds(320)))
+        {
+            EasingFunction = easing
+        });
+        slide.BeginAnimation(TranslateTransform.YProperty,
+            new DoubleAnimation(16, 0, new Duration(TimeSpan.FromMilliseconds(360))) { EasingFunction = easing });
+    }
+
+    private void ShowLaunchLogs()
+    {
+        if (_launchLogWindow is { IsVisible: true })
+        {
+            _launchLogWindow.Activate();
+            return;
+        }
+
+        var window = new LaunchLogWindow { Owner = this };
+        window.LoadExisting(LogText.Text);
+        window.Closed += (_, _) =>
+        {
+            if (ReferenceEquals(_launchLogWindow, window))
+                _launchLogWindow = null;
+        };
+        _launchLogWindow = window;
+        window.Show();
     }
 
     private void AddLog(string message)
@@ -675,5 +795,6 @@ public partial class MainWindow : Window
         var line = $"[{DateTime.Now:HH:mm:ss}] {message}";
         LogText.AppendText(line + Environment.NewLine);
         LogText.ScrollToEnd();
+        _launchLogWindow?.Append(line);
     }
 }

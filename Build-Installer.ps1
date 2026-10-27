@@ -17,50 +17,57 @@ $javaHome = $env:JAVA_HOME
 if ([string]::IsNullOrWhiteSpace($javaHome)) {
     $javaHome = Join-Path $env:LOCALAPPDATA 'Programs\KyvoraTemurin8'
 }
-if (-not (Test-Path -LiteralPath (Join-Path $javaHome 'bin\javac.exe') -PathType Leaf)) {
-    throw 'Para compilar Kyvora HUD se requiere JDK 8 x64.'
-}
-$javaExecutable = Join-Path $javaHome 'bin\java.exe'
-$javaDetails = & $env:ComSpec /c "`"$javaExecutable`" -XshowSettings:properties -version 2>&1"
-if ($LASTEXITCODE -ne 0 -or ($javaDetails -join "`n") -notmatch 'version "1\.8\.') {
-    throw 'Kyvora HUD requiere JDK 8 x64.'
-}
-$javaArchitecture = $javaDetails | Select-String 'sun.arch.data.model' | Select-Object -First 1
-if ($null -eq $javaArchitecture -or $javaArchitecture.Line -notmatch '64') {
-    throw 'Kyvora HUD requiere un JDK de 64 bits.'
-}
+if (Test-Path -LiteralPath (Join-Path $javaHome 'bin\javac.exe') -PathType Leaf) {
+    $javaExecutable = Join-Path $javaHome 'bin\java.exe'
+    $javaDetails = & $env:ComSpec /c "`"$javaExecutable`" -XshowSettings:properties -version 2>&1"
+    if ($LASTEXITCODE -ne 0 -or ($javaDetails -join "`n") -notmatch 'version "1\.8\.') {
+        throw 'Kyvora HUD requiere JDK 8 x64.'
+    }
+    $javaArchitecture = $javaDetails | Select-String 'sun.arch.data.model' | Select-Object -First 1
+    if ($null -eq $javaArchitecture -or $javaArchitecture.Line -notmatch '64') {
+        throw 'Kyvora HUD requiere un JDK de 64 bits.'
+    }
 
-$previousJavaHome = $env:JAVA_HOME
-$previousPath = $env:Path
-try {
-    $env:JAVA_HOME = $javaHome
-    $env:Path = (Join-Path $javaHome 'bin') + ';' + $env:Path
-    Push-Location -LiteralPath $hudProject
-    & (Join-Path $hudProject 'gradlew.bat') build --no-daemon
-    if ($LASTEXITCODE -ne 0) { throw 'No se pudo compilar Kyvora HUD.' }
+    $previousJavaHome = $env:JAVA_HOME
+    $previousPath = $env:Path
+    try {
+        $env:JAVA_HOME = $javaHome
+        $env:Path = (Join-Path $javaHome 'bin') + ';' + $env:Path
+        Push-Location -LiteralPath $hudProject
+        & (Join-Path $hudProject 'gradlew.bat') build --no-daemon
+        if ($LASTEXITCODE -ne 0) { throw 'No se pudo compilar Kyvora HUD.' }
+    }
+    finally {
+        Pop-Location
+        $env:JAVA_HOME = $previousJavaHome
+        $env:Path = $previousPath
+    }
 }
-finally {
-    Pop-Location
-    $env:JAVA_HOME = $previousJavaHome
-    $env:Path = $previousPath
+elseif (-not (Test-Path -LiteralPath $hudJar -PathType Leaf) -or -not (Test-Path -LiteralPath $hud1165Jar -PathType Leaf)) {
+    throw 'Para compilar los HUD se requiere JDK 8 x64; no se encontraron los JAR ya compilados para reutilizarlos.'
+}
+else {
+    Write-Host 'JDK 8 x64 no encontrado; se reutilizarán los dos HUD Kyvora ya compilados.' -ForegroundColor Yellow
 }
 if (-not (Test-Path -LiteralPath $hudJar -PathType Leaf)) { throw 'No se encontró el JAR de Kyvora HUD.' }
 New-Item -ItemType Directory -Path $modDirectory -Force | Out-Null
 Copy-Item -LiteralPath $hudJar -Destination (Join-Path $modDirectory 'KyvoraHud.jar') -Force
 
-$previousJavaHome = $env:JAVA_HOME
-$previousPath = $env:Path
-try {
-    $env:JAVA_HOME = $javaHome
-    $env:Path = (Join-Path $javaHome 'bin') + ';' + $env:Path
-    Push-Location -LiteralPath $hud1165Project
-    & (Join-Path $hud1165Project 'gradlew.bat') build --no-daemon
-    if ($LASTEXITCODE -ne 0) { throw 'No se pudo compilar Kyvora HUD para Minecraft 1.16.5.' }
-}
-finally {
-    Pop-Location
-    $env:JAVA_HOME = $previousJavaHome
-    $env:Path = $previousPath
+if (Test-Path -LiteralPath (Join-Path $javaHome 'bin\javac.exe') -PathType Leaf) {
+    $previousJavaHome = $env:JAVA_HOME
+    $previousPath = $env:Path
+    try {
+        $env:JAVA_HOME = $javaHome
+        $env:Path = (Join-Path $javaHome 'bin') + ';' + $env:Path
+        Push-Location -LiteralPath $hud1165Project
+        & (Join-Path $hud1165Project 'gradlew.bat') build --no-daemon
+        if ($LASTEXITCODE -ne 0) { throw 'No se pudo compilar Kyvora HUD para Minecraft 1.16.5.' }
+    }
+    finally {
+        Pop-Location
+        $env:JAVA_HOME = $previousJavaHome
+        $env:Path = $previousPath
+    }
 }
 if (-not (Test-Path -LiteralPath $hud1165Jar -PathType Leaf)) { throw 'No se encontró el JAR de Kyvora HUD 1.16.5.' }
 Copy-Item -LiteralPath $hud1165Jar -Destination (Join-Path $modDirectory 'KyvoraHud-1.16.5.jar') -Force

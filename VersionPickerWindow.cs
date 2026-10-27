@@ -23,7 +23,7 @@ internal sealed class VersionPickerWindow : Window
         var root = new DockPanel { Margin = new Thickness(20) };
         var head = new StackPanel();
         head.Children.Add(new TextBlock { Text = "ELIGE TU VERSIÓN", FontSize = 18, FontWeight = FontWeights.Bold });
-        head.Children.Add(new TextBlock { Text = "Versiones oficiales compatibles con Java 8 · hasta 1.16.5", Foreground = Brushes.LightGray, Margin = new Thickness(0, 4, 0, 0) });
+        head.Children.Add(new TextBlock { Text = "Versiones release compatibles con Java 8 (hasta 1.16.5)", Foreground = Brushes.LightGray, Margin = new Thickness(0, 4, 0, 0) });
         _filter.ToolTip = "Filtrar, por ejemplo: 1.8.9 o 1.20";
         head.Children.Add(_filter);
         DockPanel.SetDock(head, Dock.Top); root.Children.Add(head);

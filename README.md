@@ -64,6 +64,6 @@ Pulsa **Mover HUD** en el menú y arrastra los paneles de Keystrokes/CPS o estad
 
 Para los hitboxes de depuración integrados en Minecraft, usa **F3+B**.
 
-El selector limita la memoria configurada para no dedicarle más de la mitad de la memoria disponible para .NET. Revisa las reglas del servidor antes de usar modificaciones cliente, incluido cualquier HUD.
+La memoria recomendada se ajusta a la versión de Minecraft y al RAM disponible: aproximadamente 1 GB para versiones antiguas, 1.5 GB para 1.13–1.14 y 2 GB para 1.15–1.16.5, con un límite para dejar recursos al sistema. El launcher incluye HUD Kyvora en 1.8.9 y 1.16.5; en las demás versiones inicia Forge sin el HUD. Revisa las reglas del servidor antes de usar modificaciones cliente, incluido cualquier HUD.
 
 KyvoraPvp es un proyecto independiente y no está afiliado con Mojang Studios ni Microsoft.

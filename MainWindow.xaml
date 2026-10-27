@@ -4,17 +4,18 @@
         Title="KyvoraClient 26.2"
         Width="1360" Height="850" MinWidth="1020" MinHeight="680"
         WindowStartupLocation="CenterScreen"
-        Background="#0B0D12"
+        Icon="xd/Kyvora-K.jpeg"
+        Background="#090813"
         Foreground="#F4F5F8"
         FontFamily="Segoe UI">
-  <Grid>
+  <Grid x:Name="RootLayout">
     <Grid.RowDefinitions>
       <RowDefinition Height="54" />
       <RowDefinition Height="28" />
       <RowDefinition Height="*" />
     </Grid.RowDefinitions>
 
-    <Border Grid.Row="0" Background="#0D0F15" BorderBrush="#252831" BorderThickness="0,0,0,1">
+    <Border Grid.Row="0" Background="#0A0914" BorderBrush="#332044" BorderThickness="0,0,0,1">
       <Grid Margin="18,0">
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="Auto" />
@@ -22,45 +23,45 @@
           <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-          <Border Width="28" Height="28" CornerRadius="6" Background="#171927"
-                  BorderBrush="#4B456D" BorderThickness="1" ClipToBounds="True">
-            <Image Source="xd/Kyvora-Minecraft-Java.png" Stretch="UniformToFill" />
+          <Border Width="30" Height="30" CornerRadius="7" Background="#090C18"
+                  BorderBrush="#B847FF" BorderThickness="1.5" ClipToBounds="True">
+            <Image Source="xd/Kyvora-K.jpeg" Stretch="UniformToFill" />
           </Border>
-          <TextBlock Text="KYVORA" FontSize="11" FontWeight="Bold" Margin="9,0,0,0"
+          <TextBlock Text="KYVORA" FontSize="13" FontWeight="Bold" Foreground="#E7C1FF" Margin="9,0,0,0"
                      VerticalAlignment="Center" />
-          <Border Background="#171923" CornerRadius="5" Padding="8,5" Margin="12,0,0,0">
-            <TextBlock Text="CLIENT 26.2" FontSize="8" FontWeight="Bold" Foreground="#C7BBFF" />
+          <Border Background="#241034" BorderBrush="#8132B7" BorderThickness="1" CornerRadius="8" Padding="10,5" Margin="12,0,0,0">
+            <TextBlock Text="CLIENT 26.2" FontSize="8" FontWeight="Bold" Foreground="#E3B1FF" />
           </Border>
         </StackPanel>
         <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-          <Border Background="#191C24" BorderBrush="#2B2F39" BorderThickness="1"
+          <Border Background="#171020" BorderBrush="#7435A0" BorderThickness="1"
                   CornerRadius="6" Padding="12,8" Margin="0,0,8,0">
-            <TextBlock x:Name="SelectedVersionText" Text="1.8.9" FontSize="9" Foreground="#E1E3E8" />
+            <TextBlock x:Name="SelectedVersionText" Text="1.8.9" FontSize="9" Foreground="#E9C6FF" />
           </Border>
           <Button x:Name="AccountButton" Content="Vincular cuenta Microsoft"
-                  Background="#20232C" Padding="12,8" FontSize="9"
+                  Background="#251034" BorderBrush="#9742C9" BorderThickness="1" Padding="12,8" FontSize="9"
                   VerticalAlignment="Center" Click="AccountButton_Click" />
         </StackPanel>
       </Grid>
     </Border>
 
-    <Border Grid.Row="1" Background="#302023" BorderBrush="#523033" BorderThickness="0,0,0,1">
+    <Border Grid.Row="1" Background="#24102D" BorderBrush="#762B91" BorderThickness="0,0,0,1">
       <TextBlock x:Name="LauncherTagline" Text="✦  KYVORA 26.2  ·  CLIENTE PVP PARA MINECRAFT 1.8.9"
-                 FontSize="8" FontWeight="SemiBold" Foreground="#E8B8B7"
+                 FontSize="8" FontWeight="SemiBold" Foreground="#E9B7FF"
                  HorizontalAlignment="Center" VerticalAlignment="Center" />
     </Border>
 
     <Grid Grid.Row="2">
       <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="88" />
+        <ColumnDefinition Width="104" />
         <ColumnDefinition Width="*" />
-        <ColumnDefinition Width="286" />
+        <ColumnDefinition Width="300" />
       </Grid.ColumnDefinitions>
 
-      <Border Grid.Column="0" Background="#0E1016" BorderBrush="#252831" BorderThickness="0,0,1,0">
+      <Border Grid.Column="0" Background="#0B0913" BorderBrush="#352044" BorderThickness="0,0,1,0">
         <DockPanel LastChildFill="True">
           <StackPanel DockPanel.Dock="Top" Margin="8,15,8,0">
-            <Button x:Name="HomeNavButton" Background="#242735" Foreground="#DAD4FF"
+            <Button x:Name="HomeNavButton" Background="#29113A" BorderBrush="#B847FF" BorderThickness="1" Foreground="#F0D7FF"
                     Height="56" Padding="5" Margin="0,0,0,7" ToolTip="Inicio"
                     Click="HomeNavButton_Click">
               <StackPanel HorizontalAlignment="Center"><TextBlock Text="⌂" FontSize="20" HorizontalAlignment="Center"/><TextBlock Text="INICIO" FontSize="7" FontWeight="Bold" Margin="0,2,0,0"/></StackPanel>
@@ -112,16 +113,16 @@
             </StackPanel>
           </Grid>
 
-          <Border Height="270" CornerRadius="12" BorderBrush="#353A46" BorderThickness="1"
-                  Background="#11141B" ClipToBounds="True">
+          <Border Height="270" CornerRadius="12" BorderBrush="#A43DE0" BorderThickness="1.5"
+                  Background="#11101B" ClipToBounds="True">
             <Grid>
               <Image Source="xd/Kyvora-Galaxy.jpg" Stretch="UniformToFill" Opacity="0.7" />
               <Border>
                 <Border.Background>
                   <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
-                    <GradientStop Color="#E9080A0E" Offset="0" />
-                    <GradientStop Color="#AA0B0D12" Offset="0.58" />
-                    <GradientStop Color="#350B0D12" Offset="1" />
+                    <GradientStop Color="#EA0A0815" Offset="0" />
+                    <GradientStop Color="#B20B0918" Offset="0.58" />
+                    <GradientStop Color="#3A130A1C" Offset="1" />
                   </LinearGradientBrush>
                 </Border.Background>
               </Border>
@@ -132,13 +133,13 @@
                 </Grid.ColumnDefinitions>
                 <StackPanel VerticalAlignment="Center">
                   <TextBlock x:Name="HeroVersionText" Text="KYVORA PVP  /  CLIENTE PARA 1.8.9" FontSize="8"
-                             FontWeight="Bold" Foreground="#C2B9FF" />
+                             FontWeight="Bold" Foreground="#E4AEFF" />
                   <TextBlock Text="Entra al juego." FontSize="28" FontWeight="Bold"
                              Margin="0,8,0,0" />
                   <TextBlock Text="Minecraft Java Edition · Cuenta premium"
                              FontSize="10" Foreground="#C2C7D0" Margin="0,5,0,0" />
                   <Button x:Name="PlayButton" Content="▶   JUGAR AHORA" Width="220" Height="52"
-                          HorizontalAlignment="Left" Background="#8C7BFF"
+                          HorizontalAlignment="Left" Background="#C044FF" BorderBrush="#F0B9FF" BorderThickness="1.5"
                           Foreground="#101117" FontSize="14" FontWeight="Bold"
                           IsEnabled="False" Click="PlayButton_Click" Margin="0,20,0,0" />
                   <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
@@ -147,14 +148,11 @@
                                Foreground="#D1D4DC" />
                   </StackPanel>
                 </StackPanel>
-                <Grid Grid.Column="1" Width="162" Height="162" HorizontalAlignment="Center"
-                      VerticalAlignment="Center">
-                  <Ellipse Fill="#30171B28" Stroke="#4C5263" StrokeThickness="1" />
-                  <Ellipse Margin="12" Fill="#171923" Stroke="#7C70D2" StrokeThickness="1.5" />
-                  <Border Margin="25" CornerRadius="70" Background="#171923" ClipToBounds="True">
-                    <Image Source="xd/Kyvora-Minecraft-Java.png" Stretch="UniformToFill" />
-                  </Border>
-                </Grid>
+                <Border Grid.Column="1" Width="158" Height="158" HorizontalAlignment="Center"
+                        VerticalAlignment="Center" CornerRadius="18" Background="#080B14"
+                        BorderBrush="#B847FF" BorderThickness="1.5" ClipToBounds="True">
+                  <Image Source="xd/Kyvora-K.jpeg" Stretch="UniformToFill" />
+                </Border>
               </Grid>
             </Grid>
           </Border>
@@ -171,13 +169,13 @@
               <ColumnDefinition Width="12" />
               <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-            <Border Grid.ColumnSpan="3" Height="142" CornerRadius="10" Background="#171923"
-                    BorderBrush="#38313A" BorderThickness="1" ClipToBounds="True">
+            <Border Grid.ColumnSpan="3" Height="142" CornerRadius="10" Background="#171020"
+                    BorderBrush="#8238A7" BorderThickness="1" ClipToBounds="True">
               <Grid>
                 <Image Source="xd/Kyvora-Galaxy.jpg" Stretch="UniformToFill" Opacity="0.35" />
-                <Border Background="#A20D1118" />
+                <Border Background="#B00D0918" />
                 <StackPanel VerticalAlignment="Center" Margin="17,0">
-                  <TextBlock Text="INSTANCIA ACTIVA" FontSize="8" FontWeight="Bold" Foreground="#C7BBFF" />
+                  <TextBlock Text="INSTANCIA ACTIVA" FontSize="8" FontWeight="Bold" Foreground="#E2B0FF" />
                   <TextBlock x:Name="SelectedProfileText" Text="KYVORA PVP · 1.8.9" FontSize="16" FontWeight="Bold" Margin="0,7,0,0" />
                   <TextBlock x:Name="SelectedInstanceDetail" Text="Minecraft Java · cliente Kyvora" FontSize="9" Foreground="#B7BECC" Margin="0,4,0,0" />
                 </StackPanel>
@@ -191,7 +189,7 @@
               <ColumnDefinition Width="12" />
               <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-            <Border Background="#131720" BorderBrush="#2A303B" BorderThickness="1"
+            <Border Background="#130F1C" BorderBrush="#4A285F" BorderThickness="1"
                     CornerRadius="8" Padding="13">
               <StackPanel>
                 <TextBlock Text="MEMORIA MÁXIMA" FontSize="8" FontWeight="Bold"
@@ -203,12 +201,14 @@
                   </Grid.ColumnDefinitions>
                   <StackPanel>
                     <TextBlock Text="RAM del juego" FontSize="10" FontWeight="SemiBold" />
-                    <TextBlock Text="Hasta el 50% de la memoria disponible" FontSize="8"
+                    <TextBlock Text="Ajustada para dejar RAM libre al sistema" FontSize="8"
                                Foreground="#9AA3B2" Margin="0,3,0,0" />
                   </StackPanel>
                   <ComboBox x:Name="MemorySelector" Grid.Column="1"
                             SelectionChanged="MemorySelector_SelectionChanged">
-                    <ComboBoxItem Content="2 GB" Tag="2048" IsSelected="True" />
+                    <ComboBoxItem Content="1 GB" Tag="1024" IsSelected="True" />
+                    <ComboBoxItem Content="1.5 GB" Tag="1536" />
+                    <ComboBoxItem Content="2 GB" Tag="2048" />
                     <ComboBoxItem Content="3 GB" Tag="3072" />
                     <ComboBoxItem Content="4 GB" Tag="4096" />
                     <ComboBoxItem Content="5 GB" Tag="5120" />
@@ -218,7 +218,7 @@
                 </Grid>
               </StackPanel>
             </Border>
-            <Border x:Name="GameStatusPanel" Grid.Column="2" Background="#131720" BorderBrush="#2A303B"
+            <Border x:Name="GameStatusPanel" Grid.Column="2" Background="#130F1C" BorderBrush="#4A285F"
                     BorderThickness="1" CornerRadius="8" Padding="13">
               <StackPanel>
                 <TextBlock Text="ESTADO DEL JUEGO" FontSize="8" FontWeight="Bold"
@@ -241,7 +241,7 @@
             </Border>
           </Grid>
 
-          <Border Background="#10131A" BorderBrush="#292E38" BorderThickness="1"
+          <Border Background="#100C17" BorderBrush="#49245E" BorderThickness="1"
                   CornerRadius="7" Padding="11" Margin="0,12,0,0">
             <DockPanel>
               <TextBlock Text="LAUNCHER" FontSize="8" FontWeight="Bold"
@@ -255,7 +255,7 @@
         </StackPanel>
       </ScrollViewer>
 
-      <Border Grid.Column="2" Background="#111319" BorderBrush="#252831"
+      <Border Grid.Column="2" Background="#0E0B16" BorderBrush="#352044"
               BorderThickness="1,0,0,0">
         <Grid Margin="17,15">
           <Grid.RowDefinitions>
@@ -265,7 +265,7 @@
             <RowDefinition Height="Auto" />
           </Grid.RowDefinitions>
           <Grid>
-            <Border Background="#1A1D25" CornerRadius="7" Padding="11,9">
+            <Border Background="#1C1027" BorderBrush="#512B69" BorderThickness="1" CornerRadius="7" Padding="11,9">
               <StackPanel Orientation="Horizontal">
                 <Ellipse Width="7" Height="7" Fill="#40D89A" VerticalAlignment="Center" />
                 <TextBlock Text="KYVORA CLIENT 26.2" FontSize="9" FontWeight="Bold"
@@ -290,7 +290,7 @@
                        FontSize="9" Foreground="#969EAC" TextWrapping="Wrap"
                        TextAlignment="Center" Margin="8,7,8,0" />
           </StackPanel>
-          <Border Grid.Row="3" Background="#171A22" BorderBrush="#2B303B" BorderThickness="1"
+          <Border Grid.Row="3" Background="#171020" BorderBrush="#62307D" BorderThickness="1"
                   CornerRadius="7" Padding="11">
             <StackPanel>
               <TextBlock Text="CARPETA DE ESTA VERSIÓN" FontSize="8" FontWeight="Bold" Foreground="#8992A1" />
